@@ -1,1 +1,5 @@
 *.key
+.vscode/*
+
+# Local History for Visual Studio Code
+.history/

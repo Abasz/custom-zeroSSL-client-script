@@ -133,11 +133,38 @@ function cleanup() {
     exit
 }
 
+function usage() {
+    echo "Usage: zeroSSL-client.sh ACCESS_KEY [OPTIONS] [METHODS]"
+    echo "Options:"
+    echo "      --apache-dir PATH       Set apache directory (default: /etc/apache2/)"
+    echo "      --apache-conf PATH      Set apache conf file (default: sites-available/default-ssl.conf)"
+    echo "      --cert PATH             Set certificate file (default: ssl/certificate.cer)"
+    echo "      --ca_bundle PATH        Set CA Bundle file (default: ssl/ca_bundle.cer)"
+    echo "      -r, --request PATH      Set CSR file (default: ssl/request.csr)"
+    echo "      -k, --key PATH          Set Private key file (default: ssl/private.cer)"
+    echo "      --wait-for-validation   Wait for certificate issue after verification (default: false)"
+    echo "Methods:"
+    echo "      -n, --new               Request new certificate"
+    echo "      -v, --validate [ID]     Validate certificate, ID is optional with the --new flag"
+    echo "      -i, --install [ID]      Install certificate, ID is optional with the --new or --validate flag"
+    echo "      -d, --delete ID         Delete certificate with ID"
+    #echo "      -c, --cancell ID        Cancell certificate with ID"
+}
+
+for arg in "$@"; do
+    case "$arg" in
+    -h|--help)
+        usage
+        exit
+    ;;
+    esac
+done
+
 trap cleanup SIGHUP SIGINT SIGTERM
 
 if [ -z "$1" ] || [ "${1:0:1}" = "-" ]; then
     echo "ACCESS_KEY is missing"
-    # TODO: Show helper
+    usage
 fi
 
 if [ -z "$(which jq)" ]; then \
