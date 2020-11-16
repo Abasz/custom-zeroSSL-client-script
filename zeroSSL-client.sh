@@ -27,6 +27,16 @@ function deleteCertificate() {
     fi
 }
 
+function cancelCertificate() {
+    local CANCEL_RESPONSE
+    CANCEL_RESPONSE=$(curl https://api.zerossl.com/certificates/"$1"/cancel?access_key="$ACCESS_KEY")
+
+    if [ "$(jq -r '.success' <<< "$CANCEL_RESPONSE")" != "1" ]; then
+        echo "Error while cancelling certificate: $(jq -r '.error.type' <<< "$CANCEL_RESPONSE")"
+        exit 2
+    fi
+}
+
 function validateCertificate() {
     ID=$(jq -r '.id' <<< "$1")
     COMMON_NAME="$(jq -r '.common_name' <<< "$1")"
@@ -147,8 +157,9 @@ function usage() {
     echo "      -n, --new               Request new certificate"
     echo "      -v, --validate [ID]     Validate certificate, ID is optional with the --new flag"
     echo "      -i, --install [ID]      Install certificate, ID is optional with the --new or --validate flag"
-    echo "      -d, --delete ID         Delete certificate with ID"
-    #echo "      -c, --cancell ID        Cancell certificate with ID"
+    echo "      -c, --cancel ID         Cancel certificate with ID or IDs - quoted and items separated with a space"
+    echo "      -d, --delete ID         Delete certificate with ID or IDs - quoted and items separated with a space"
+    echo "                              (if used together with cancel IDs are passed on to this method automatically)"
 }
 
 for arg in "$@"; do
@@ -258,17 +269,17 @@ done
 
 for i in "${!args[@]}"; do
     case "${args[$i]}" in
-        -d|--delete)
+        -c|--cancel)
             if [ -n "${args[$i+1]}" ] && [ "${args[$i+1]:0:1}" != "-" ]; then
                 read -r -a IDS <<< "${args[$i+1]}"
                 INDEX=0
                 for ITEM in "${IDS[@]}"; do
-                    echo "Deleteing: $ITEM"
-                    deleteCertificate "$ITEM"
+                    echo "Cancelling: $ITEM"
+                    cancelCertificate "$ITEM"
                     ((INDEX++))
 
                     if [ "$INDEX" -ne ${#IDS[@]} ]; then
-                        echo "Waiting for 10 sec before next delete request"
+                        echo "Waiting for 10 sec before next cancel request"
                         sleep 10
                     fi
                 done
@@ -287,24 +298,40 @@ for i in "${!args[@]}"; do
     esac
 done
 
-# for i in "${!args[@]}"; do
-#     case "${args[$i]}" in
-#         -c|--cancell)
-#             if [ -n "${args[$i+1]}" ] && [ "${args[$i+1]:0:1}" != "-" ]; then
-#                 createCertificateRequest
-#                 unset "args[$i]"
-#                 unset "args[$i+1]"
-#             else
-#                 echo "Error: Argument for ${args[$i]} (Certificate ID) is missing" >&2
-#                 exit 1
-#             fi
-#
-#             if [ ${#args[@]} -eq 0 ]; then
-#                 exit 1
-#             fi
-#         ;;
-#     esac
-# done
+for i in "${!args[@]}"; do
+    case "${args[$i]}" in
+        -d|--delete)
+            if { [ -n "${args[$i+1]}" ] && [ "${args[$i+1]:0:1}" != "-" ]; } || [ ${#IDS[@]} -ne 0 ]; then
+
+                if [ ${#IDS[@]} -eq 0 ]; then
+                read -r -a IDS <<< "${args[$i+1]}"
+                fi
+
+                INDEX=0
+                for ITEM in "${IDS[@]}"; do
+                    echo "Deleteing: $ITEM"
+                    deleteCertificate "$ITEM"
+                    ((INDEX++))
+
+                    if [ "$INDEX" -ne ${#IDS[@]} ]; then
+                        echo "Waiting for 10 sec before next delete request"
+                        sleep 10
+                    fi
+                done
+                unset "args[$i]"
+                unset "args[$i+1]"
+            else
+                echo "Error: Argument for ${args[$i]} (Certificate ID) is missing or add --cancel flag with IDs" >&2
+                exit 1
+            fi
+
+            if [ ${#args[@]} -eq 0 ]; then
+                cleanup
+                exit 1
+            fi
+        ;;
+    esac
+done
 
 for i in "${!args[@]}"; do
     case "${args[$i]}" in
