@@ -178,6 +178,11 @@ if [ -z "$1" ] || [ "${1:0:1}" = "-" ]; then
     usage
 fi
 
+if [ -z "$(which curl)" ]; then \
+    echo "curl is not installed, installing..."
+    sudo apt install -y curl
+fi
+
 if [ -z "$(which jq)" ]; then \
     echo "jq is not installed, installing..."
     sudo apt install -y jq
@@ -304,7 +309,7 @@ for i in "${!args[@]}"; do
             if { [ -n "${args[$i+1]}" ] && [ "${args[$i+1]:0:1}" != "-" ]; } || [ ${#IDS[@]} -ne 0 ]; then
 
                 if [ ${#IDS[@]} -eq 0 ]; then
-                read -r -a IDS <<< "${args[$i+1]}"
+                    read -r -a IDS <<< "${args[$i+1]}"
                 fi
 
                 INDEX=0
