@@ -154,7 +154,7 @@ function usage() {
     echo "      -k, --key PATH          Set Private key file (default: ssl/private.cer)"
     echo "      --wait-for-validation   Wait for certificate issue after verification (default: false)"
     echo "Methods:"
-    echo "      -n, --new               Request new certificate"
+    echo "      -n, --new DOMAIN_NAME   Request new certificate with domain name"
     echo "      -v, --validate [ID]     Validate certificate, ID is optional with the --new flag"
     echo "      -i, --install [ID]      Install certificate, ID is optional with the --new or --validate flag"
     echo "      -c, --cancel ID         Cancel certificate with ID or IDs - quoted and items separated with a space"
