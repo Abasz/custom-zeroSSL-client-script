@@ -1,8 +1,8 @@
-# ZeroSSL Client Script
+# Custom ZeroSSL Client Script
 
 **This is not an official ZeroSSL Client! For that please use the ZeroSSL-certbot**
 
-I made a bash script to interact with the ZeroSSL REST API supporting most of the methods provided there. I needed this as certbot client for some reason did not work properly. The script internally uses `curl`, and `jq`. Please note that if anIy of those are not installed the script will try to install them.
+I made a bash script for my self to interact with the ZeroSSL REST API supporting most of the methods provided there. I needed this as certbot client for some reason did not work properly. The script internally uses `curl`, and `jq`. Please note that if any of those are not installed the script will try to install them.
 
 ## Usage:
 
@@ -10,7 +10,7 @@ I made a bash script to interact with the ZeroSSL REST API supporting most of th
 ./zeroSSL-client.sh ACCESS_KEY [OPTIONS] [METHODS]
 ```
 
-ZeroSSL API Access key is required argument anything else is optional. If no method is set the full request-validate-install process is carried out (with --wait-for-validation). In this case it is recommended to run it as a background job (or with `nohup`) so the script does not exists accidentally while waiting for validation.
+ZeroSSL API Access key is required argument anything else is optional. If no method is set the full request-validate-install process is carried out (with --wait-for-validation). In this case it is recommended to run it as a background job (or with `nohup`) so the script does not exist accidentally while waiting for validation.
 
 Most of the methods may be set independently (e.g. validate and install, cancel and delete).
 
